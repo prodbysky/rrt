@@ -2,7 +2,7 @@ use std::io::Write;
 
 use crate::vector3::Vector3;
 
-type Pixel = Vector3;
+pub type Pixel = Vector3;
 
 impl From<u32> for Pixel {
     fn from(value: u32) -> Self {
@@ -15,13 +15,13 @@ impl From<u32> for Pixel {
 }
 
 pub struct Image {
-    data: Vec<Pixel>,
-    pub w: u16,
-    pub h: u16,
+    pub data: Vec<Pixel>,
+    pub w: u32,
+    pub h: u32,
 }
 
 impl Image {
-    pub fn new(w: u16, h: u16) -> Self {
+    pub fn new(w: u32, h: u32) -> Self {
         Self {
             data: vec![Pixel::from(0x00000000); (w * h) as usize],
             w,

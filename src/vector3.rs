@@ -8,7 +8,7 @@ pub struct Vector3 {
     pub z: f64,
 }
 
-type Point3 = Vector3;
+pub type Point3 = Vector3;
 
 impl Vector3 {
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
