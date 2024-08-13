@@ -6,8 +6,6 @@ use crate::{
     vector3::{Point3, Vector3},
 };
 
-use rand::{rngs::ThreadRng, Rng};
-
 pub struct Camera {
     aspect_ratio: f64,
     image_width: u32,
@@ -18,7 +16,6 @@ pub struct Camera {
     pixel_delta_v: Vector3,
     samples_pp: u32,
     pixel_sample_scale: f64,
-    rng: ThreadRng,
 }
 
 impl Camera {
@@ -26,7 +23,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
-        let samples_pp = 64;
+        let samples_pp = 4;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -44,7 +41,6 @@ impl Camera {
             pixel00_pos: viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5,
             pixel_delta_u,
             pixel_delta_v,
-            rng: rand::thread_rng(),
             pixel_sample_scale: 1.0 / samples_pp as f64,
             samples_pp,
         }
@@ -96,10 +92,6 @@ impl Camera {
     }
 
     fn sample_square(&mut self) -> Vector3 {
-        Vector3::new(
-            self.rng.gen_range(-0.5..0.5),
-            self.rng.gen_range(-0.5..0.5),
-            0.0,
-        )
+        Vector3::new(fastrand::f64() - 0.5, fastrand::f64() - 0.5, 0.0)
     }
 }
