@@ -19,6 +19,22 @@ impl Vector3 {
         Self { x: s, y: s, z: s }
     }
 
+    pub fn random() -> Self {
+        Self {
+            x: fastrand::f64(),
+            y: fastrand::f64(),
+            z: fastrand::f64(),
+        }
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self {
+            x: (fastrand::f64() * max).clamp(min, max),
+            y: (fastrand::f64() * max).clamp(min, max),
+            z: (fastrand::f64() * max).clamp(min, max),
+        }
+    }
+
     pub fn len(&self) -> f64 {
         self.sq_len().sqrt()
     }
