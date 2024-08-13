@@ -16,17 +16,25 @@ const VIEWPORT_WIDTH: f64 = VIEWPORT_HEIGHT * (IMAGE_WIDTH as f64 / IMAGE_HEIGHT
 
 const FOCAL_LEN: f64 = 1.0;
 
-fn hit_sphere(center: Point3, r: f64, ray: &ray::Ray) -> bool {
+fn hit_sphere(center: Point3, r: f64, ray: &ray::Ray) -> f64 {
     let oc = center - ray.origin;
     let a = ray.direction.dot(ray.direction);
-    let b = ray.direction.dot(oc);
+    let b = ray.direction.dot(oc) * -2.0;
     let c = oc.dot(oc) - r * r;
-    (b * b - 4.0 * a * c) >= 0.0
+    let disc = b * b - 4.0 * a * c;
+
+    if disc < 0.0 {
+        -1.0
+    } else {
+        -b - disc.sqrt() / (2.0 * a)
+    }
 }
 
 fn ray_color(ray: &ray::Ray) -> Pixel {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Pixel::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(Point3::new(0.0, 0.0, -1.4), 0.5, ray);
+    if t > 0.0 {
+        let n = (ray.at(t) - Vector3::new(0.0, 0.0, -1.0)).unit();
+        return Pixel::new(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
     }
     let unit_dir = ray.direction.unit();
     let a = 0.5 * (unit_dir.y + 1.0);
