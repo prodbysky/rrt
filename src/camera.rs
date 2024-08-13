@@ -1,3 +1,5 @@
+use core::f64;
+
 use crate::{
     hittable::{HitInfo, Hittable},
     hittable_list::HittableList,
@@ -16,6 +18,7 @@ pub struct Camera {
     pixel_delta_v: Vector3,
     samples_pp: u32,
     pixel_sample_scale: f64,
+    max_depth: u16,
 }
 
 impl Camera {
@@ -43,6 +46,7 @@ impl Camera {
             pixel_delta_v,
             pixel_sample_scale: 1.0 / samples_pp as f64,
             samples_pp,
+            max_depth: 10,
         }
     }
 
@@ -62,7 +66,7 @@ impl Camera {
                 let mut result = Pixel::from_scalar(0.0);
                 for _ in 0..self.samples_pp {
                     let r = self.get_ray(x, y);
-                    result += Camera::ray_color(&r, world);
+                    result += Camera::ray_color(&r, self.max_depth, world);
                 }
                 result = result * self.pixel_sample_scale;
                 image.data[(x + y * image.w) as usize] = result;
@@ -74,10 +78,14 @@ impl Camera {
         image
     }
 
-    fn ray_color(ray: &ray::Ray, world: &HittableList) -> Pixel {
+    fn ray_color(ray: &ray::Ray, max_depth: u16, world: &HittableList) -> Pixel {
+        if max_depth == 0 {
+            return Pixel::from_scalar(0.0);
+        }
         let mut info: HitInfo = HitInfo::default();
-        if world.hit(ray, 0.0, f64::INFINITY, &mut info) {
-            return (info.normal + Pixel::from_scalar(1.0)) * 0.5;
+        if world.hit(ray, f64::EPSILON, f64::INFINITY, &mut info) {
+            let dir = Vector3::random_on_hemisphere(&info.normal);
+            return Camera::ray_color(&ray::Ray::new(info.point, dir), max_depth - 1, world) * 0.5;
         }
         let unit_dir = ray.direction.unit();
         let a = 0.5 * (unit_dir.y + 1.0);

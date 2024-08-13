@@ -44,6 +44,19 @@ impl Vector3 {
         }
     }
 
+    pub fn random_unit() -> Vector3 {
+        Vector3::random_in_unit_sphere().unit()
+    }
+
+    pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
+        let on_sphere = Vector3::random_unit();
+        if on_sphere.dot(*normal) > 0.0 {
+            on_sphere
+        } else {
+            -on_sphere
+        }
+    }
+
     pub fn len(&self) -> f64 {
         self.sq_len().sqrt()
     }
