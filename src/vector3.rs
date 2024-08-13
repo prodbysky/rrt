@@ -29,9 +29,18 @@ impl Vector3 {
 
     pub fn random_range(min: f64, max: f64) -> Self {
         Self {
-            x: (fastrand::f64() * max).clamp(min, max),
-            y: (fastrand::f64() * max).clamp(min, max),
-            z: (fastrand::f64() * max).clamp(min, max),
+            x: min + fastrand::f64() * (max - min),
+            y: min + fastrand::f64() * (max - min),
+            z: min + fastrand::f64() * (max - min),
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> Vector3 {
+        loop {
+            let p = Vector3::random_range(-1.0, 1.0);
+            if p.sq_len() < 1.0 {
+                return p;
+            }
         }
     }
 
