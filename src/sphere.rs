@@ -36,7 +36,6 @@ impl Hittable for Sphere {
         let rooted = disc.sqrt();
 
         let mut root = (h - rooted) / a;
-
         if root <= t_min || t_max <= root {
             root = (h + rooted) / a;
             if root <= t_min || t_max <= root {

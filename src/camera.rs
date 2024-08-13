@@ -60,7 +60,7 @@ impl Camera {
 
                 let ray = ray::Ray::new(pixel_center, ray_dir);
 
-                let color = Camera::ray_color(&ray, &world);
+                let color = Camera::ray_color(&ray, world);
                 image.data[(x + y * image.w) as usize] = color;
             }
         }
