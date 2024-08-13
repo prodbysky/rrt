@@ -6,6 +6,8 @@ use crate::{
     vector3::{Point3, Vector3},
 };
 
+use rand::{rngs::ThreadRng, Rng};
+
 pub struct Camera {
     aspect_ratio: f64,
     image_width: u32,
@@ -14,6 +16,9 @@ pub struct Camera {
     pixel00_pos: Point3,
     pixel_delta_u: Vector3,
     pixel_delta_v: Vector3,
+    samples_pp: u32,
+    pixel_sample_scale: f64,
+    rng: ThreadRng,
 }
 
 impl Camera {
@@ -21,6 +26,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
+        let samples_pp = 32;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -38,10 +44,13 @@ impl Camera {
             pixel00_pos: viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5,
             pixel_delta_u,
             pixel_delta_v,
+            rng: rand::thread_rng(),
+            pixel_sample_scale: 1.0 / samples_pp as f64,
+            samples_pp,
         }
     }
 
-    pub fn render(&self, world: &HittableList) -> Image {
+    pub fn render(&mut self, world: &HittableList) -> Image {
         let mut image = Image::new(self.image_width, self.image_height);
         println!("Started rendering image: {}x{}", image.w, image.h);
 
@@ -53,15 +62,13 @@ impl Camera {
             }
 
             for x in 0..image.w {
-                let pixel_center = self.pixel00_pos
-                    + (self.pixel_delta_u * x as f64)
-                    + (self.pixel_delta_v * y as f64);
-                let ray_dir = pixel_center - self.pos;
-
-                let ray = ray::Ray::new(pixel_center, ray_dir);
-
-                let color = Camera::ray_color(&ray, world);
-                image.data[(x + y * image.w) as usize] = color;
+                let mut result = Pixel::from_scalar(0.0);
+                for _ in 0..self.samples_pp {
+                    let r = self.get_ray(x, y);
+                    result += Camera::ray_color(&r, world);
+                }
+                result = result * self.pixel_sample_scale;
+                image.data[(x + y * image.w) as usize] = result;
             }
         }
 
@@ -77,5 +84,22 @@ impl Camera {
         let unit_dir = ray.direction.unit();
         let a = 0.5 * (unit_dir.y + 1.0);
         Pixel::from_scalar(1.0) * (1.0 - a) + Pixel::new(0.5, 0.7, 1.0) * a
+    }
+
+    fn get_ray(&mut self, i: u32, j: u32) -> ray::Ray {
+        // Say my grace
+        let offset = self.sample_square();
+        let sample = self.pixel00_pos
+            + (self.pixel_delta_u * (i as f64 + offset.x))
+            + (self.pixel_delta_v * (j as f64 + offset.y));
+        ray::Ray::new(self.pos, sample - self.pos)
+    }
+
+    fn sample_square(&mut self) -> Vector3 {
+        Vector3::new(
+            self.rng.gen_range(-0.25..0.25),
+            self.rng.gen_range(-0.25..0.25),
+            0.0,
+        )
     }
 }
