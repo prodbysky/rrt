@@ -23,7 +23,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
-        let samples_pp = 4;
+        let samples_pp = 32;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -50,6 +50,7 @@ impl Camera {
         let mut image = Image::new(self.image_width, self.image_height);
         println!("Started rendering image: {}x{}", image.w, image.h);
 
+        let start = std::time::Instant::now();
         for y in 0..image.h {
             println!("Progress: {}%", (100 * y) / image.h);
             if y != image.h - 1 {
@@ -67,6 +68,8 @@ impl Camera {
                 image.data[(x + y * image.w) as usize] = result;
             }
         }
+        let end = start.elapsed();
+        println!("Rendering took: {:?}", end);
 
         image
     }
@@ -76,7 +79,6 @@ impl Camera {
         if world.hit(ray, 0.0, f64::INFINITY, &mut info) {
             return (info.normal + Pixel::from_scalar(1.0)) * 0.5;
         }
-
         let unit_dir = ray.direction.unit();
         let a = 0.5 * (unit_dir.y + 1.0);
         Pixel::from_scalar(1.0) * (1.0 - a) + Pixel::new(0.5, 0.7, 1.0) * a

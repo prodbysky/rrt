@@ -17,7 +17,7 @@ fn main() {
     world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -3.0), 1.0)));
     world.add(Box::new(Sphere::new(Point3::new(0.0, -101.5, -3.0), 100.0)));
 
-    let mut cam = camera::Camera::new(16.0 / 9.0, 1920);
+    let mut cam = camera::Camera::new(16.0 / 9.0, 640);
 
     let image = cam.render(&world);
 
