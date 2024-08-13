@@ -26,7 +26,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
-        let samples_pp = 32;
+        let samples_pp = 64;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -97,8 +97,8 @@ impl Camera {
 
     fn sample_square(&mut self) -> Vector3 {
         Vector3::new(
-            self.rng.gen_range(-0.25..0.25),
-            self.rng.gen_range(-0.25..0.25),
+            self.rng.gen_range(-0.5..0.5),
+            self.rng.gen_range(-0.5..0.5),
             0.0,
         )
     }
