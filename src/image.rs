@@ -29,6 +29,14 @@ impl Image {
         }
     }
 
+    fn linear_to_gamma(linear: f64) -> f64 {
+        if linear > 0.0 {
+            linear.sqrt()
+        } else {
+            0.0
+        }
+    }
+
     pub fn write_ppm(&self, f: &mut impl Write) -> std::io::Result<()> {
         writeln!(f, "P3")?;
         writeln!(f, "{} {}", self.w, self.h)?;
@@ -38,9 +46,9 @@ impl Image {
             writeln!(
                 f,
                 "{} {} {}",
-                (x * 255.0) as u8,
-                (y * 255.0) as u8,
-                (z * 255.0) as u8
+                (Image::linear_to_gamma(*x) * 255.0) as u8,
+                (Image::linear_to_gamma(*y) * 255.0) as u8,
+                (Image::linear_to_gamma(*z) * 255.0) as u8,
             )?;
         }
         Ok(())

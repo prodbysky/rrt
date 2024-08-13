@@ -57,6 +57,15 @@ impl Vector3 {
         }
     }
 
+    pub fn near_zero(&self) -> bool {
+        let eps = 1e-8;
+        (self.x.abs() < eps) && (self.y.abs() < eps) && (self.z.abs() < eps)
+    }
+
+    pub fn reflect(&self, other: &Vector3) -> Vector3 {
+        *self - *other * self.dot(*other) * 2.0
+    }
+
     pub fn len(&self) -> f64 {
         self.sq_len().sqrt()
     }
