@@ -1,3 +1,4 @@
+use core::fmt;
 use std::io::Write;
 
 use crate::vector3::Vector3;
@@ -36,8 +37,10 @@ impl Image {
             0.0
         }
     }
+}
 
-    pub fn write_ppm(&self, f: &mut impl Write) -> std::io::Result<()> {
+impl fmt::Display for Image {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "P3")?;
         writeln!(f, "{} {}", self.w, self.h)?;
         writeln!(f, "255")?;

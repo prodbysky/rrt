@@ -1,4 +1,4 @@
-use std::io::BufWriter;
+use std::io::{BufWriter, Write};
 
 use hittable_list::HittableList;
 use sphere::Sphere;
@@ -23,5 +23,5 @@ fn main() {
 
     println!("Writing image to disk");
     let mut file = BufWriter::new(std::fs::File::create("test.ppm").unwrap());
-    image.write_ppm(&mut file).unwrap();
+    write!(file, "{}", image).unwrap();
 }
