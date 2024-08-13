@@ -1,3 +1,5 @@
+use std::io::BufWriter;
+
 use image::Pixel;
 use vector3::{Point3, Vector3};
 
@@ -6,7 +8,7 @@ mod ray;
 mod vector3;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 120;
+const IMAGE_WIDTH: u32 = 1280;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
 
 const VIEWPORT_HEIGHT: f64 = 2.0;
@@ -23,7 +25,7 @@ fn hit_sphere(center: Point3, r: f64, ray: &ray::Ray) -> bool {
 }
 
 fn ray_color(ray: &ray::Ray) -> Pixel {
-    if hit_sphere(Point3::new(0.0, 0.0, 1.0), 0.5, ray) {
+    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
         return Pixel::new(1.0, 0.0, 0.0);
     }
     let unit_dir = ray.direction.unit();
@@ -41,6 +43,7 @@ fn main() {
     let viewport_upper_left =
         camera_center - Vector3::new(0.0, 0.0, FOCAL_LEN) - viewport_u / 2.0 - viewport_v / 2.0;
     let first_pixel_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
+
     let mut image = image::Image::new(IMAGE_WIDTH, IMAGE_HEIGHT);
     for y in 0..IMAGE_HEIGHT {
         for x in 0..IMAGE_WIDTH {
@@ -54,6 +57,7 @@ fn main() {
             image.data[(x + y * IMAGE_WIDTH) as usize] = color;
         }
     }
-    let mut file = std::fs::File::create("test.ppm").unwrap();
+    let file = std::fs::File::create("test.ppm").unwrap();
+    let mut file = BufWriter::new(file);
     image.write_ppm(&mut file).unwrap();
 }
