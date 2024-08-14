@@ -1,5 +1,3 @@
-use core::f64;
-
 use crate::{
     hittable::{HitInfo, Hittable},
     hittable_list::HittableList,
