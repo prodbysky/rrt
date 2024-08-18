@@ -1,5 +1,5 @@
 use crate::{
-    hittable::{HitInfo, Hittable},
+    hittable::Hittable,
     hittable_list::HittableList,
     image::{Image, Pixel},
     ray,
@@ -80,8 +80,7 @@ impl Camera {
         if max_depth == 0 {
             return Pixel::from_scalar(0.0);
         }
-        let mut info: HitInfo = HitInfo::default();
-        if world.hit(ray, f64::EPSILON, f64::INFINITY, &mut info) {
+        if let Some(info) = world.hit(ray, f64::EPSILON, f64::INFINITY) {
             let dir = Vector3::random_on_hemisphere(&info.normal);
             return Camera::ray_color(&ray::Ray::new(info.point, dir), max_depth - 1, world) * 0.5;
         }

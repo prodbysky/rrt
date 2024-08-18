@@ -19,5 +19,5 @@ impl HitInfo {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &ray::Ray, t_min: f64, t_max: f64, info: &mut HitInfo) -> bool;
+    fn hit(&self, ray: &ray::Ray, t_min: f64, t_max: f64) -> Option<HitInfo>;
 }
