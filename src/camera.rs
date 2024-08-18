@@ -24,7 +24,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
-        let samples_pp = 50;
+        let samples_pp = 20;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -44,36 +44,46 @@ impl Camera {
             pixel_delta_v,
             pixel_sample_scale: 1.0 / samples_pp as f64,
             samples_pp,
-            max_depth: 20,
+            max_depth: 4,
         }
     }
 
-    pub fn render(&mut self, world: &HittableList) -> Image {
-        let mut image = Image::new(self.image_width, self.image_height);
+    pub fn render(&mut self, world: &HittableList, frame_count: u32) -> Image {
+        let image = Image::new(self.image_width, self.image_height);
+        let mut accumulated_image = Image::new(self.image_width, self.image_height);
         println!("Started rendering image: {}x{}", image.w, image.h);
 
         let start = std::time::Instant::now();
-        for y in 0..image.h {
-            println!("Progress: {}%", (100 * y) / image.h);
-            if y != image.h - 1 {
-                print!("\x1B[F");
-                print!("\x1B[K");
-            }
-
-            for x in 0..image.w {
-                let mut result = Pixel::from_scalar(0.0);
-                for _ in 0..self.samples_pp {
-                    let r = self.get_ray(x, y);
-                    result += Camera::ray_color(&r, self.max_depth, world);
+        for frame in 0..frame_count {
+            println!("Rendering frame {}/{}", frame + 1, frame_count);
+            for y in 0..image.h {
+                println!("Progress: {}%", (100 * y) / image.h);
+                if y != image.h - 1 {
+                    print!("\x1B[F");
+                    print!("\x1B[K");
                 }
-                result = result * self.pixel_sample_scale;
-                image.data[(x + y * image.w) as usize] = result;
+
+                for x in 0..image.w {
+                    let mut result = Pixel::from_scalar(0.0);
+                    for _ in 0..self.samples_pp {
+                        let r = self.get_ray(x, y);
+                        result += Camera::ray_color(&r, self.max_depth, world);
+                    }
+                    result = result * self.pixel_sample_scale;
+                    accumulated_image.data[(x + y * image.w) as usize] += result;
+                }
             }
         }
+
+        // Average the accumulated colors
+        for i in 0..(self.image_width * self.image_height) as usize {
+            accumulated_image.data[i] = accumulated_image.data[i] * (1.0 / frame_count as f64);
+        }
+
         let end = start.elapsed();
         println!("Rendering took: {:?}", end);
 
-        image
+        accumulated_image
     }
 
     fn ray_color(ray: &ray::Ray, max_depth: u16, world: &HittableList) -> Pixel {

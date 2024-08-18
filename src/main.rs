@@ -37,7 +37,7 @@ fn main() {
 
     let mut cam = camera::Camera::new(16.0 / 9.0, 1920);
 
-    let image = cam.render(&world);
+    let image = cam.render(&world, 5);
 
     println!("Writing image to disk");
     let mut file = BufWriter::new(std::fs::File::create("test.ppm").unwrap());
