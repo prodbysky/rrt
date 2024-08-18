@@ -24,7 +24,7 @@ impl Camera {
         let image_h = (image_w as f64 / aspect_ratio) as u32;
         let focal_len = 1.0;
         let viewport_h = 2.0;
-        let samples_pp = 32;
+        let samples_pp = 50;
         let viewport_w = viewport_h * (image_w as f64 / image_h as f64);
         let viewport_u = Vector3::new(viewport_w, 0.0, 0.0);
         let viewport_v = Vector3::new(0.0, -viewport_h, 0.0);
@@ -44,7 +44,7 @@ impl Camera {
             pixel_delta_v,
             pixel_sample_scale: 1.0 / samples_pp as f64,
             samples_pp,
-            max_depth: 10,
+            max_depth: 20,
         }
     }
 
@@ -81,8 +81,10 @@ impl Camera {
             return Pixel::from_scalar(0.0);
         }
         if let Some(info) = world.hit(ray, f64::EPSILON, f64::INFINITY) {
-            let dir = Vector3::random_on_hemisphere(&info.normal);
-            return Camera::ray_color(&ray::Ray::new(info.point, dir), max_depth - 1, world) * 0.5;
+            if let Some((p, r)) = info.material.scatter(ray, &info) {
+                return p * Camera::ray_color(&r, max_depth - 1, world);
+            }
+            return Pixel::from_scalar(0.0);
         }
         let unit_dir = ray.direction.unit();
         let a = 0.5 * (unit_dir.y + 1.0);
